@@ -1,7 +1,5 @@
 C:\Users\Houk\Dropbox\Projects\Sudokuer\Sudokuer\bin\Debug\Sudokuer.exe
 C:\Users\Houk\Dropbox\Projects\Sudokuer\Sudokuer\bin\Debug\Sudokuer.pdb
-C:\Users\Houk\Dropbox\Projects\Sudokuer\Sudokuer\bin\Debug\nunit.framework.dll
-C:\Users\Houk\Dropbox\Projects\Sudokuer\Sudokuer\bin\Debug\nunit.framework.xml
 C:\Users\Houk\Dropbox\Projects\Sudokuer\Sudokuer\obj\x86\Debug\ResolveAssemblyReference.cache
 C:\Users\Houk\Dropbox\Projects\Sudokuer\Sudokuer\obj\x86\Debug\Sudokuer.exe
 C:\Users\Houk\Dropbox\Projects\Sudokuer\Sudokuer\obj\x86\Debug\Sudokuer.pdb

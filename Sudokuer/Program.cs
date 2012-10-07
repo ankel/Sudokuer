@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
-using NUnit.Framework;
 
 namespace Sudokuer
 {
@@ -12,6 +11,7 @@ namespace Sudokuer
         private int x;
         private int y;
         public int[,] arr;
+        private int startingLine;
 
         public int X
         {
@@ -46,12 +46,16 @@ namespace Sudokuer
             }
             if (x == 9)
             {
-                x = 8;
-                y = 8;
+                x = 0;
+            }
+            if (x == startingLine && y == 0)
+            {
                 return false;
             }
             else
+            {
                 return true;
+            }
         }
 
         static public Point Advance(Point pt)
@@ -62,7 +66,7 @@ namespace Sudokuer
             }
             else
             {
-                return new Point(pt.X + 1, 0);
+                return new Point((pt.X + 1) % 9, 0);
             }
         }
 
@@ -129,48 +133,11 @@ namespace Sudokuer
         }
     }
 
-    [TestFixture]
-    public class SudokuTest
-    {
-        Sudoku board;
-
-        [SetUp]
-        public void SetUp()
-        {
-            board = new Sudoku();
-        }
-
-        [Test]
-        public void TestAdvance()
-        {
-            for (int i = 0; i < 9; i++)
-            {
-                for (int j = 0; j < 9; j++)
-                {
-                    Assert.AreEqual(board.X, i, "i {0} j {1} X {2} Y {3}", i, j, board.X, board.Y);
-                    Assert.AreEqual(board.Y, j, "i {0} j {1} X {2} Y {3}", i, j, board.X, board.Y);
-                    Assert.AreEqual(board.currentLoc, 0);
-                    if (i == 8 && j == 8)
-                    {
-                        Assert.IsFalse(board.Advance(), "i {0} j {1} X {2} Y {3}", i, j, board.X, board.Y);
-                    }
-                    else
-                    {
-                        Assert.IsTrue(board.Advance(), "i {0} j {1} X {2} Y {3}", i, j, board.X, board.Y);
-                    }
-                }
-            }
-
-            for (int i = 0; i < 10; i++)
-            {
-                Assert.IsFalse(board.Advance());
-            }
-        }
-    }
-
     class Program
     {
         static Sudoku loc = new Sudoku();
+        static Point starting;
+        static bool visited;
 
         static bool CheckRow(int[,] arr, int x, int y, int val)
         {
@@ -230,12 +197,16 @@ namespace Sudokuer
 
         static bool Solve(int[,] arr, Point loc)
         {
-            if (loc.X == 9)
+            if (loc == starting && visited)
             {
                 PrintArr(arr);
                 return true;
             }
-            else if (arr[loc.X, loc.Y] != 0)
+            if (loc == starting && !visited)
+            {
+                visited = true;
+            }
+            if (arr[loc.X, loc.Y] != 0)
             {
                 if (Solve(arr, Sudoku.Advance(loc)))
                 {
@@ -286,31 +257,33 @@ namespace Sudokuer
                 Console.WriteLine("arguments:");
                 Console.WriteLine("c <input file> to check");
                 Console.WriteLine("s <input file> to solve");
+                Console.WriteLine("g <difficult lvl> to generate");
                 return;
             }
 
-            System.IO.StreamReader file = new System.IO.StreamReader(args[1]);
-            for (int i = 0; i < 9; ++i)
-            {
-                string str = file.ReadLine();
-                string[] splitted = str.Split(' ');
-                for (int j = 0; j < 9; ++j)
-                {
-                    int n = Convert.ToInt32(splitted[j]);
-                    if ((n < 0) || (n > 9))
-                    {
-                        throw new Exception("File contain non-digit number");
-                    }
-                    arr[i, j] = n;
-                }
-            }
-            file.Close();
-
-            Console.WriteLine("File " + args[1] + " read successfully!");
-            PrintArr(arr);
-
             if (args[0] == "c")
             {
+
+                System.IO.StreamReader file = new System.IO.StreamReader(args[1]);
+                for (int i = 0; i < 9; ++i)
+                {
+                    string str = file.ReadLine();
+                    string[] splitted = str.Split(' ');
+                    for (int j = 0; j < 9; ++j)
+                    {
+                        int n = Convert.ToInt32(splitted[j]);
+                        if ((n < 0) || (n > 9))
+                        {
+                            throw new Exception("File contain non-digit number");
+                        }
+                        arr[i, j] = n;
+                    }
+                }
+                file.Close();
+
+                Console.WriteLine("File " + args[1] + " read successfully!");
+                PrintArr(arr);
+
                 Console.WriteLine("Check mode: " + args[1]);
 
                 for (int i = 0; i < 9; ++i)
@@ -340,11 +313,170 @@ namespace Sudokuer
 
             if (args[0] == "s")
             {
+                System.IO.StreamReader file = new System.IO.StreamReader(args[1]);
+                for (int i = 0; i < 9; ++i)
+                {
+                    string str = file.ReadLine();
+                    string[] splitted = str.Split(' ');
+                    for (int j = 0; j < 9; ++j)
+                    {
+                        int n = Convert.ToInt32(splitted[j]);
+                        if ((n < 0) || (n > 9))
+                        {
+                            throw new Exception("File contain non-digit number");
+                        }
+                        arr[i, j] = n;
+                    }
+                }
+                file.Close();
+
+                Console.WriteLine("File " + args[1] + " read successfully!");
+                PrintArr(arr);
+
                 Console.WriteLine("Solve mode: " + args[1]);
 
-                Console.WriteLine(Solve(arr, new Point(0, 0)));
+                DateTime start = DateTime.Now;
+                Console.WriteLine(SolveSudoku(arr));
+                Console.WriteLine("Runtime: " + (DateTime.Now - start));
+            }
+
+            if (args[0] == "g")
+            {
+                int diffLvl = Convert.ToInt32(args[1]);
+                Console.WriteLine("Generate mode. Difficulty level: " + diffLvl);
+                if (diffLvl < 1 || diffLvl > 30)
+                {
+                    throw new Exception("Difficult lvl can only be between 1(hardest) and 30(easiest) inclusively");
+                }
+
+                arr = new int[9, 9];
+                Random rand = new Random();
+                for (int i = 0; i < 18; ++i)
+                {
+                    int x,y,t;
+                    do
+                    {
+                        x = rand.Next(9);
+                        y = rand.Next(9);
+                    } while (arr[x, y] != 0);
+                    do
+                    {
+                        t = 1 + rand.Next(9);
+                    } while (!(CheckCol(arr, x, y, t) && CheckRow(arr, x, y, t) && CheclSq(arr, x, y, t)));
+                    arr[x, y] = t;
+                }
+
+                PrintArr(arr);
+                Console.WriteLine("Solution: ");
+                Solve(arr, new Point(0, 0));
+
+                diffLvl += 17;
+                for (int i = 0; i < diffLvl; ++i)
+                {
+                    int x, y;
+                    do
+                    {
+                        x = rand.Next(9);
+                        y = rand.Next(9);
+                    } while (arr[x, y] < 0);
+                    arr[x, y] = -arr[x, y];
+                }
+
+                Console.WriteLine("Puzzle:");
+
+                for (int i = 0; i < 9; ++i)
+                {
+                    for (int j = 0; j < 9; ++j)
+                    {
+                        Console.Write((arr[i, j] < 0 ? -arr[i,j] : 0) + " ");
+                    }
+                    Console.WriteLine();
+                }
+
             }
             Console.ReadLine();
+        }
+
+        private static bool SolveSudoku(int[,] arr)
+        {
+            int max = 0;
+            int maxLine = -1;
+            for (int i = 0; i < 9; ++i)
+            {
+                int cnt = 0;
+                for (int j = 0; j < 9; ++j)
+                {
+                    if (arr[i, j] != 0)
+                    {
+                        cnt++;
+                    }
+                }
+                if (cnt > max)
+                {
+                    max = cnt;
+                    maxLine = i;
+                }
+            }
+
+            for (int i = 0; i < 9; ++i)
+            {
+                if (arr[maxLine, i] != 0)
+                {
+                    starting = new Point(maxLine, i);
+                    break;
+                }
+            }
+            visited = false;
+            return Solve(arr, starting);
+        }
+
+        private static bool SolveSuperSudoku(int[,] src)
+        {
+            IntStack iStack = new IntStack(81);
+            IntStack jStack = new IntStack(81);
+
+            int[,] dest = new int[9, 9];
+            int i,j,k;
+
+            for (i = 0; i < 9; ++i)
+            {
+                for (j = 0; j < 9; ++j)
+                {
+                    dest[i, j] = src[i, j];
+                }
+            }
+
+            for (i = 0; i < 9; ++i)
+            {
+                for (j = 0; j < 9; ++j)
+                {
+                    if (src[i,j] == 0)
+                    {
+                        for (k = dest[i,j] + 1; k < 10; ++k)
+                        {
+                            if (CheckCol(dest, i, j, k) && CheckRow(dest, i, j, k) && CheclSq(dest, i, j, k))
+                            {
+                                dest[i, j] = k;
+                                break;
+                            }
+                        }
+                        if (k == 10)
+                        {
+                            dest[i, j] = 0;
+                            i = iStack.Pop();
+                            j = jStack.Pop();
+                            j--;
+                        }
+                        else
+                        {
+                            iStack.Push(i);
+                            jStack.Push(j);
+                        }
+                    }
+                }
+            }
+            PrintArr(dest);
+            return true;
         }
     }
 }
