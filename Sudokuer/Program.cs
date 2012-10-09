@@ -6,58 +6,147 @@ using System.Drawing;
 
 namespace Sudokuer
 {
-    class Sudoku
+    //class Sudoku
+    //{
+    //    private int x;
+    //    private int y;
+    //    public int[,] arr;
+    //    private int startingLine;
+
+    //    public int X
+    //    {
+    //        get { return x; }
+    //    }
+
+    //    public int Y
+    //    {
+    //        get { return y; }
+    //    }
+
+    //    public int currentLoc
+    //    {
+    //        get { return arr[x,y];}
+    //        set { arr[x,y] = value; }
+    //    }
+
+    //    public Sudoku()
+    //    {
+    //        x = 0;
+    //        y = 0;
+    //        arr = new int[9, 9];
+    //    }
+
+    //    public bool Advance()
+    //    {
+    //        y++;
+    //        if (y == 9)
+    //        {
+    //            y = 0;
+    //            x++;
+    //        }
+    //        if (x == 9)
+    //        {
+    //            x = 0;
+    //        }
+    //        if (x == startingLine && y == 0)
+    //        {
+    //            return false;
+    //        }
+    //        else
+    //        {
+    //            return true;
+    //        }
+    //    }
+
+    //    static public Point Advance(Point pt)
+    //    {
+    //        if (pt.Y < 8)
+    //        {
+    //            return new Point(pt.X, pt.Y + 1);
+    //        }
+    //        else
+    //        {
+    //            return new Point((pt.X + 1) % 9, 0);
+    //        }
+    //    }
+
+    //    static public bool Check(int[,] intArr)
+    //    {
+    //        bool[] array;
+    //        for (int i = 0; i < 9; ++i)
+    //        {
+    //            array = new bool[10];
+    //            for (int j = 0; j < 9; ++j)
+    //            {
+    //                if (!array[intArr[i, j]])
+    //                {
+    //                    array[intArr[i, j]] = true;
+    //                }
+    //                else
+    //                {
+    //                    Console.WriteLine(String.Format("x {0} y {1}", i, j));
+    //                    return false;
+    //                }
+    //            }
+    //        }
+
+    //        for (int i = 0; i < 9; ++i)
+    //        {
+    //            array = new bool[10];
+    //            for (int j = 0; j < 9; ++j)
+    //            {
+    //                if (!array[intArr[i, j]])
+    //                {
+    //                    array[intArr[i, j]] = true;
+    //                }
+    //                else
+    //                {
+    //                    Console.WriteLine(String.Format("x {0} y {1}", i, j));
+    //                    return false;
+    //                }
+    //            }
+    //        }
+
+    //        for (int i1 = 0; i1 < 9; i1 += 3)
+    //            {
+    //                for (int j1 = 0; j1 < 9; j1 += 3)
+    //                {
+    //                    array = new bool[10];
+    //                    for (int i = i1; i < i1 + 3; ++i)
+    //                    {
+    //                        for (int j = j1; j < j1 + 3; ++j)
+    //                        {
+    //                            if (!array[intArr[i, j]])
+    //                            {
+    //                                array[intArr[i, j]] = true;
+    //                            }
+    //                            else
+    //                            {
+    //                                Console.WriteLine(String.Format("x {0} y {1}", i, j));
+    //                                return false;
+    //                            }
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //        return true;
+    //    }
+    //}
+
+    class Program
     {
-        private int x;
-        private int y;
-        public int[,] arr;
-        private int startingLine;
+        //static Sudoku loc = new Sudoku();
+        static Point starting;
+        static bool visited;
+        static int[,] solution;
+        static DateTime deadLine;
+        static bool genMode;
 
-        public int X
-        {
-            get { return x; }
-        }
-
-        public int Y
-        {
-            get { return y; }
-        }
-
-        public int currentLoc
-        {
-            get { return arr[x,y];}
-            set { arr[x,y] = value; }
-        }
-
-        public Sudoku()
-        {
-            x = 0;
-            y = 0;
-            arr = new int[9, 9];
-        }
-
-        public bool Advance()
-        {
-            y++;
-            if (y == 9)
-            {
-                y = 0;
-                x++;
-            }
-            if (x == 9)
-            {
-                x = 0;
-            }
-            if (x == startingLine && y == 0)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
-
+        /// <summary>
+        /// Move pt forward (top down, left right) and wrap around at the lower right corner
+        /// </summary>
+        /// <param name="pt">current location</param>
+        /// <returns>next location</returns>
         static public Point Advance(Point pt)
         {
             if (pt.Y < 8)
@@ -70,6 +159,11 @@ namespace Sudokuer
             }
         }
 
+        /// <summary>
+        /// Check a 9x9 grid whether it's a valid sudoku solution or not
+        /// </summary>
+        /// <param name="intArr">9x9 grid</param>
+        /// <returns>true if valid, false if not</returns>
         static public bool Check(int[,] intArr)
         {
             bool[] array;
@@ -108,37 +202,59 @@ namespace Sudokuer
             }
 
             for (int i1 = 0; i1 < 9; i1 += 3)
+            {
+                for (int j1 = 0; j1 < 9; j1 += 3)
                 {
-                    for (int j1 = 0; j1 < 9; j1 += 3)
+                    array = new bool[10];
+                    for (int i = i1; i < i1 + 3; ++i)
                     {
-                        array = new bool[10];
-                        for (int i = i1; i < i1 + 3; ++i)
+                        for (int j = j1; j < j1 + 3; ++j)
                         {
-                            for (int j = j1; j < j1 + 3; ++j)
+                            if (!array[intArr[i, j]])
                             {
-                                if (!array[intArr[i, j]])
-                                {
-                                    array[intArr[i, j]] = true;
-                                }
-                                else
-                                {
-                                    Console.WriteLine(String.Format("x {0} y {1}", i, j));
-                                    return false;
-                                }
+                                array[intArr[i, j]] = true;
+                            }
+                            else
+                            {
+                                Console.WriteLine(String.Format("x {0} y {1}", i, j));
+                                return false;
                             }
                         }
                     }
                 }
+            }
             return true;
         }
-    }
 
-    class Program
-    {
-        static Sudoku loc = new Sudoku();
-        static Point starting;
-        static bool visited;
+        /// <summary>
+        /// Copy array
+        /// </summary>
+        /// <param name="inArr">source</param>
+        /// <param name="outArr">destination</param>
+        static void CopyArr(int[,] inArr, ref int[,] outArr)
+        {
+            if (outArr == null)
+            {
+                outArr = new int[9, 9];
+            }
 
+            for (int i = 0; i < 9; ++i)
+            {
+                for (int j = 0; j < 9; ++j)
+                {
+                    outArr[i, j] = inArr[i, j];
+                }
+            }
+        }
+
+        /// <summary>
+        /// Check if a number is valid for a row
+        /// </summary>
+        /// <param name="arr">array to check against</param>
+        /// <param name="x">x coordinate of the point to check</param>
+        /// <param name="y">y coordinate of the point to check</param>
+        /// <param name="val">value to check</param>
+        /// <returns>true if a valid move, false if not a valid move</returns>
         static bool CheckRow(int[,] arr, int x, int y, int val)
         {
             if (arr.Length != 81)
@@ -156,6 +272,14 @@ namespace Sudokuer
             return true;
         }
 
+        /// <summary>
+        /// Check if a number is valid for a collumn
+        /// </summary>
+        /// <param name="arr">array to check against</param>
+        /// <param name="x">x coordinate of the point to check</param>
+        /// <param name="y">y coordinate of the point to check</param>
+        /// <param name="val">value to check</param>
+        /// <returns>true if a valid move, false if not a valid move</returns>
         static bool CheckCol(int[,] arr, int x, int y, int val)
         {
             if (arr.Length != 81)
@@ -173,6 +297,14 @@ namespace Sudokuer
             return true;
         }
 
+        /// <summary>
+        /// Check if a value is valid for a smaller square
+        /// </summary>
+        /// <param name="arr">array to check against</param>
+        /// <param name="x">x coordinate of the point to check</param>
+        /// <param name="y">y coordinate of the point to check</param>
+        /// <param name="val">value to check</param>
+        /// <returns>true if a valid move, false if not a valid move</returns>
         static bool CheclSq(int[,] arr, int x, int y, int val)
         {
             if (arr.Length != 81)
@@ -195,34 +327,39 @@ namespace Sudokuer
             return true;
         }
 
+        /// <summary>
+        /// Recursive function used to find solution
+        /// </summary>
+        /// <param name="arr">(in)complete 9x9 array</param>
+        /// <param name="loc">location to look at</param>
+        /// <returns>true if solved, false if can not be solved</returns>
         static bool Solve(int[,] arr, Point loc)
         {
+            if (genMode && DateTime.Now > deadLine)
+            {
+                return false;
+            }
             if (loc == starting && visited)
             {
-                PrintArr(arr);
+                CopyArr(arr, ref solution);
                 return true;
             }
             if (loc == starting && !visited)
             {
                 visited = true;
             }
-            if (arr[loc.X, loc.Y] != 0)
+            while (arr[loc.X, loc.Y] != 0)
             {
-                if (Solve(arr, Sudoku.Advance(loc)))
-                {
-                    return true;
-                }
+                loc = Advance(loc);
             }
-            else
-            {
-                for (int i = 1; i <= 9; ++i)
+            for (int i = 1; i <= 9; ++i)
                 {
                     if (CheckCol(arr, loc.X, loc.Y, i) &&
                         CheckRow(arr, loc.X, loc.Y, i) &&
                         CheclSq(arr, loc.X, loc.Y, i))
                     {
                         arr[loc.X, loc.Y] = i;
-                        if (Solve(arr, Sudoku.Advance(loc)))
+                        if (Solve(arr, Advance(loc)))
                         {
                             return true;
                         }
@@ -232,10 +369,14 @@ namespace Sudokuer
                         }
                     }
                 }
-            }
+            
             return false;
         }
 
+        /// <summary>
+        /// Display the array onto console
+        /// </summary>
+        /// <param name="arr">array to display</param>
         static void PrintArr(int[,] arr)
         {
             for (int i = 0; i < 9; ++i)
@@ -248,9 +389,43 @@ namespace Sudokuer
             }
         }
 
+        /// <summary>
+        /// Read file for 9x9 array of (in)complete sudoku puzzle
+        /// </summary>
+        /// <param name="path">path to file</param>
+        /// <returns>9x9 array contains (in)complete sudoku puzzle</returns>
+        static int[,] ReadFile(string path)
+        {
+            int[,] arr = new int[9, 9];
+
+            System.IO.StreamReader file = new System.IO.StreamReader(path);
+            for (int i = 0; i < 9; ++i)
+            {
+                string str = file.ReadLine();
+                string[] splitted = str.Split(' ');
+                for (int j = 0; j < 9; ++j)
+                {
+                    int n = Convert.ToInt32(splitted[j]);
+                    if ((n < 0) || (n > 9))
+                    {
+                        throw new Exception("File contain non-digit number");
+                    }
+                    arr[i, j] = n;
+                }
+            }
+            file.Close();
+
+            return arr;
+        }
+
+        /// <summary>
+        /// Main code
+        /// </summary>
+        /// <param name="args">arguments</param>
         static void Main(string[] args)
         {
             int[,] arr = new int[9, 9];
+            genMode = false;
 
             if (args.Length != 2)
             {
@@ -263,23 +438,7 @@ namespace Sudokuer
 
             if (args[0] == "c")
             {
-
-                System.IO.StreamReader file = new System.IO.StreamReader(args[1]);
-                for (int i = 0; i < 9; ++i)
-                {
-                    string str = file.ReadLine();
-                    string[] splitted = str.Split(' ');
-                    for (int j = 0; j < 9; ++j)
-                    {
-                        int n = Convert.ToInt32(splitted[j]);
-                        if ((n < 0) || (n > 9))
-                        {
-                            throw new Exception("File contain non-digit number");
-                        }
-                        arr[i, j] = n;
-                    }
-                }
-                file.Close();
+                arr = ReadFile(args[1]);
 
                 Console.WriteLine("File " + args[1] + " read successfully!");
                 PrintArr(arr);
@@ -295,7 +454,7 @@ namespace Sudokuer
                     Console.WriteLine();
                 }
 
-                Console.WriteLine(Sudoku.Check(arr));
+                Console.WriteLine(Check(arr));
 
                 for (int i = 0; i < 9; ++i)
                 {
@@ -313,22 +472,7 @@ namespace Sudokuer
 
             if (args[0] == "s")
             {
-                System.IO.StreamReader file = new System.IO.StreamReader(args[1]);
-                for (int i = 0; i < 9; ++i)
-                {
-                    string str = file.ReadLine();
-                    string[] splitted = str.Split(' ');
-                    for (int j = 0; j < 9; ++j)
-                    {
-                        int n = Convert.ToInt32(splitted[j]);
-                        if ((n < 0) || (n > 9))
-                        {
-                            throw new Exception("File contain non-digit number");
-                        }
-                        arr[i, j] = n;
-                    }
-                }
-                file.Close();
+                arr = ReadFile(args[1]);
 
                 Console.WriteLine("File " + args[1] + " read successfully!");
                 PrintArr(arr);
@@ -337,11 +481,13 @@ namespace Sudokuer
 
                 DateTime start = DateTime.Now;
                 Console.WriteLine(SolveSudoku(arr));
+                PrintArr(solution);
                 Console.WriteLine("Runtime: " + (DateTime.Now - start));
             }
 
             if (args[0] == "g")
             {
+                genMode = true;
                 int diffLvl = Convert.ToInt32(args[1]);
                 Console.WriteLine("Generate mode. Difficulty level: " + diffLvl);
                 if (diffLvl < 1 || diffLvl > 30)
@@ -351,36 +497,45 @@ namespace Sudokuer
 
                 arr = new int[9, 9];
                 Random rand = new Random();
-                for (int i = 0; i < 18; ++i)
+                bool pass;
+                do
                 {
-                    int x,y,t;
-                    do
+                    rand = new Random();
+                    arr = new int[9, 9];
+                    deadLine = DateTime.Now.AddSeconds(5);
+                    for (int i = 0; i < 17; ++i)
                     {
-                        x = rand.Next(9);
-                        y = rand.Next(9);
-                    } while (arr[x, y] != 0);
-                    do
-                    {
-                        t = 1 + rand.Next(9);
-                    } while (!(CheckCol(arr, x, y, t) && CheckRow(arr, x, y, t) && CheclSq(arr, x, y, t)));
-                    arr[x, y] = t;
-                }
+                        int x, y, t;
+                        do
+                        {
+                            x = rand.Next(9);
+                            y = rand.Next(9);
+                        } while (arr[x, y] != 0);
+                        do
+                        {
+                            t = 1 + rand.Next(9);
+                        } while (!(CheckCol(arr, x, y, t) && CheckRow(arr, x, y, t) && CheclSq(arr, x, y, t)));
+                        arr[x, y] = t;
+                    }
 
-                PrintArr(arr);
+                    PrintArr(arr);
+                    pass = SolveSudoku(arr);
+                } while (!pass);
+
                 Console.WriteLine("Solution: ");
-                Solve(arr, new Point(0, 0));
-
-                diffLvl += 17;
-                for (int i = 0; i < diffLvl; ++i)
-                {
-                    int x, y;
-                    do
+                PrintArr(solution);
+                    
+                    diffLvl += 17;
+                    for (int i = 0; i < diffLvl; ++i)
                     {
-                        x = rand.Next(9);
-                        y = rand.Next(9);
-                    } while (arr[x, y] < 0);
-                    arr[x, y] = -arr[x, y];
-                }
+                        int x, y;
+                        do
+                        {
+                            x = rand.Next(9);
+                            y = rand.Next(9);
+                        } while (arr[x, y] < 0);
+                        arr[x, y] = -arr[x, y];
+                    }
 
                 Console.WriteLine("Puzzle:");
 
@@ -438,13 +593,7 @@ namespace Sudokuer
             int[,] dest = new int[9, 9];
             int i,j,k;
 
-            for (i = 0; i < 9; ++i)
-            {
-                for (j = 0; j < 9; ++j)
-                {
-                    dest[i, j] = src[i, j];
-                }
-            }
+            CopyArr(src, ref dest);
 
             for (i = 0; i < 9; ++i)
             {
