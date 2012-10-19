@@ -585,6 +585,12 @@ namespace Sudokuer
             return Solve(arr, starting);
         }
 
+        /// <summary>
+        /// Addapted from algorithm at http://en.wikipedia.org/wiki/Talk:Sudoku_algorithms#worst_case_scenario_compute_timing
+        /// by unsigned user as a benchmark. 
+        /// </summary>
+        /// <param name="src"></param>
+        /// <returns></returns>
         private static bool SolveSuperSudoku(int[,] src)
         {
             IntStack iStack = new IntStack(81);
