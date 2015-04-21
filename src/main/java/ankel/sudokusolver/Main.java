@@ -14,6 +14,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
 
 import ankel.sudokusolver.constraint.Checker;
@@ -25,7 +26,16 @@ import ankel.sudokusolver.constraint.SudokuChecker;
 public class Main
 {
 
-  private static AtomicLong tries = new AtomicLong();
+  private static final AtomicLong tries = new AtomicLong();
+  private static final Set<Integer> ONE_THROUGH_NINE;
+  private static final ObjectMapper mapper = new ObjectMapper();
+  static {
+    ONE_THROUGH_NINE = Sets.newConcurrentHashSet();
+    for (int i = 1; i <=9; ++i)
+    {
+      ONE_THROUGH_NINE.add(i);
+    }
+  }
 
   public static void main(String[] args) throws Exception
   {
@@ -36,11 +46,16 @@ public class Main
     constraints.add(new SudokuChecker(getGridListFromResource("row.txt")));
 
     final List<Integer> puzzle = getGridListFromResource("puzzle.txt");
+    final List<Set<Integer>> validNumberPerCell = new ArrayList<>();
+    for (int i = 0; i < 81; ++i)
+    {
+      validNumberPerCell.add(null);
+    }
 
-    final int start = findStart(constraints, puzzle);
+    final int start = findStart(constraints, puzzle, validNumberPerCell);
     System.out.println(start);
 
-    solve(constraints, puzzle, start, start);
+    solve(constraints, puzzle, validNumberPerCell, start, start);
 
     printPuzzle(puzzle);
     System.out.println(tries.get());
@@ -48,7 +63,8 @@ public class Main
     System.out.println(watch.elapsed(TimeUnit.MILLISECONDS) + "ms");
   }
 
-  private static int findStart(final List<Checker> constraints, final List<Integer> puzzle)
+  private static int findStart(final List<Checker> constraints, final List<Integer> puzzle,
+      final List<Set<Integer>> validNumberPerCell)
   {
     int highestOrder = 0,
         start = 0;
@@ -59,15 +75,13 @@ public class Main
         continue;
       }
       final int pos = i;
-      final Integer order = constraints.parallelStream()
+      final Set<Integer> invalidNumbers = constraints.parallelStream()
           .map((c) -> c.order(puzzle, pos))
-          .reduce((a,b) ->
-          {
-            a.addAll(b);
-            return a;
-          })
-          .map(Set::size)
+          .reduce(Sets::union)
           .get();
+      validNumberPerCell.set(pos, Sets.difference(ONE_THROUGH_NINE, invalidNumbers));
+
+      final int order = invalidNumbers.size();
       if (order > highestOrder)
       {
         highestOrder = order;
@@ -90,7 +104,8 @@ public class Main
     }
   }
 
-  private static boolean solve(final List<Checker> constraints, final List<Integer> puzzle, int index, final int start)
+  private static boolean solve(final List<Checker> constraints, final List<Integer> puzzle,
+      final List<Set<Integer>> validNumberPerCell, int index, final int start)
   {
     if (index == start && puzzle.get(start) != 0)
     {
@@ -110,7 +125,7 @@ public class Main
 
     final int nextPos = index;
 
-    for (int i = 1; i <= 9; ++i)
+    for (Integer i : validNumberPerCell.get(nextPos))
     {
       final int nextValue = i;
       tries.incrementAndGet();
@@ -122,7 +137,7 @@ public class Main
       if (validMove)
       {
         puzzle.set(index, i);
-        if (solve(constraints, puzzle, (index + 1) % size, start))
+        if (solve(constraints, puzzle, validNumberPerCell, (index + 1) % size, start))
         {
           return true;
         }
@@ -135,12 +150,11 @@ public class Main
   private static List<Integer> getGridListFromResource(final String fileName) throws IOException
   {
     final URL resourceUrl = Resources.getResource(fileName);
-    final ImmutableList<String> lines = Resources.asCharSource(resourceUrl, Charsets.UTF_8)
+    final ImmutableList<String> lines =
+        Resources.asCharSource(resourceUrl, Charsets.UTF_8)
         .readLines();
 
     final String gridLine = Joiner.on(',').join(lines);
-
-    ObjectMapper mapper = new ObjectMapper();
 
     List<Integer> gridList = mapper.readValue("[" + gridLine + "]",
         new TypeReference<List<Integer>>() {});

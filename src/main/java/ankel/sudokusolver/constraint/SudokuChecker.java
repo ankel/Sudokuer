@@ -22,7 +22,7 @@ public class SudokuChecker implements Checker
     this.gridList = gridList;
     gridMap = new ArrayList<>();
 
-    for (int i = 0; i <= 10; ++i)
+    for (int i = 0; i < 10; ++i)
     {
       gridMap.add(new ArrayList<>());
     }
